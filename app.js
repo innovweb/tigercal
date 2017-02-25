@@ -1,15 +1,19 @@
+/******************************************************************************/
+/* app.js                                                                     */
+/* Author: Seung Jae Lee                                                      */
+/* Parts of code from                                                         */
+/* https://developers.google.com/google-apps/calendar/quickstart/node         */
+/******************************************************************************/
+
 var fs = require('fs');
 var readline = require('readline');
 var google = require('googleapis');
 var googleAuth = require('google-auth-library');
 var chrono = require('chrono-node')
 
-// FIXME: Write source
-
-// If modifying these scopes, delete your previously saved credentials
-// at ~/.credentials/gmail-nodejs-quickstart.json
-var SCOPES = ['https://www.googleapis.com/auth/gmail.modify', // all read/write access except delete
-              'https://www.googleapis.com/auth/calendar'];    // read/write access to calendar
+// read/write access except delete for gmail, and read/write access to calendar
+var SCOPES = ['https://www.googleapis.com/auth/gmail.modify',
+              'https://www.googleapis.com/auth/calendar'];
 var TOKEN_DIR = (process.env.HOME || process.env.HOMEPATH ||
         process.env.USERPROFILE) + '/.credentials/';
 var TOKEN_PATH = TOKEN_DIR + 'gmail-calendar-nodejs-tigercal.json';
@@ -21,7 +25,7 @@ fs.readFile('client_secret.json', function processClientSecrets(err, content) {
         return;
     }
     // Authorize a client with the loaded credentials, then call the
-    // Gmail API.
+    // main program.
     authorize(JSON.parse(content), main);
 });
 
@@ -100,7 +104,8 @@ function storeToken(token) {
 }
 
 /**
- * Parses events from all unread emails, adds them to calendar, and marks them read.
+ * Parses events from all unread emails, adds them to calendar, and marks them 
+ * as read.
  *
  * @param {Object} auth Authorization credentials for Google APIs.
  */
@@ -112,7 +117,8 @@ var main = function (auth) {
         userId: 'me',
         q: 'is:unread',
     }, function (err, res) {
-        if (!err && res && res.messages && res.messages.length) { // if unread message exists
+        // if unread message exists
+        if (!err && res && res.messages && res.messages.length) { 
             console.log('Unread message exists');
             for(var i = 0; i < res.messages.length; i++) {
                 var messageId = res.messages[i].id;
@@ -123,10 +129,16 @@ var main = function (auth) {
                     id: messageId,
                 }, function(err, result) {
                     // FIXME: Some of these might not be needed
-                    if(result && result.payload && result.payload.parts && result.payload.parts.length && result.payload.parts[0].body && result.payload.parts[0].body.data) {
-                        var subject = result.payload.headers.find(x => x.name === 'Subject').value; // Subject/Title of email
-                        var encodedbody = result.payload.parts[0].body.data;                        // Text body of the email encoded by base64
-                        var body = Buffer.from(encodedbody, 'base64').toString("ascii");;           // Text body of the email
+                    if(result && result.payload && result.payload.parts 
+                    && result.payload.parts.length 
+                    && result.payload.parts[0].body
+                    && result.payload.parts[0].body.data) {
+                        // Subject/Title of email
+                        var subject = result.payload.headers.find(x => x.name === 'Subject').value;
+                        // Text body of the email encoded by base64
+                        var encodedbody = result.payload.parts[0].body.data;
+                        // Text body of the email
+                        var body = Buffer.from(encodedbody, 'base64').toString("ascii");;
                         
                         // Parse event
                         // FIXME: text should be changed to body
