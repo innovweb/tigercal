@@ -15,5 +15,9 @@
   "bugs": {
     "url": "https://github.com/innovweb/tigercal/issues"
   },
-  "homepage": "https://github.com/innovweb/tigercal#readme"
+  "homepage": "https://github.com/innovweb/tigercal#readme",
+  "dependencies": {
+    "google-auth-library": "^0.10.0",
+    "googleapis": "^17.1.0"
+  }
 }
