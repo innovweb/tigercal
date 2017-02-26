@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/innovweb/tigercal#readme",
   "dependencies": {
+    "chrono-node": "^1.2.5",
     "google-auth-library": "^0.10.0",
     "googleapis": "^17.1.0"
   }
