@@ -118,17 +118,22 @@ var main = function (auth) {
         q: 'is:unread',
     }, function (err, res) {
         // if unread message exists
-        if (!err && res && res.messages && res.messages.length) { 
-            console.log('Unread message exists');
+        if (!err && res && res.messages && res.messages.length) {
             for(var i = 0; i < res.messages.length; i++) {
                 var messageId = res.messages[i].id;
+
+                // Mark email as read by deleting UNREAD label
+                google.gmail('v1').users.messages.modify({
+                    userId: 'me',
+                    id: messageId,
+                    resource: { removeLabelIds: ['UNREAD'] },
+                });
 
                 // Get content of email
                 google.gmail('v1').users.messages.get({
                     userId: 'me',
                     id: messageId,
                 }, function(err, result) {
-                    // FIXME: Some of these might not be needed
                     if(result && result.payload && result.payload.parts 
                     && result.payload.parts.length 
                     && result.payload.parts[0].body
@@ -141,20 +146,14 @@ var main = function (auth) {
                         var body = Buffer.from(encodedbody, 'base64').toString("ascii");;
                         
                         // Parse event
-                        // FIXME: text should be changed to body
-                        var event = parseEvent({subject: subject, text: 'feb 20 5pm'});
-
-                        // Add event to calendar
-                        addEvent(event);
-
-                        // Mark email as read by deleting UNREAD label
-                        google.gmail('v1').users.messages.modify({
-                            userId: 'me',
-                            id: messageId,
-                            resource: { removeLabelIds: ['UNREAD'] },
-                        });
+                        var event = parseEvent({subject: subject, text: body});
+                        if(event != null) {
+                            // Add event to calendar
+                            // FIXME: Should return if calendar returned error
+                            addEvent(event);
+                        }
                     }
-                });   
+                });
             }
         } else {
             console.log('No unread message exists');
@@ -170,6 +169,11 @@ var main = function (auth) {
 function parseEvent(email) {
     var ref = new Date();
     var results = chrono.parse(email.text, ref);
+    
+    if(results.length == 0) {
+        return null;
+    }
+
     var startTime = results[0].start.date().toISOString();
     var endTime = startTime;
     if (results[0].end) {
@@ -187,6 +191,7 @@ function parseEvent(email) {
             'timeZone': 'America/New_York',
         },
     };
+
     return event;
 }
 
@@ -203,7 +208,6 @@ function addEvent(event) {
     }, function(err, event) {
         if (err) {
             console.log('There was an error contacting the Calendar service: ' + err);
-            return;
         }
         // console.log('Event created: %s', event.htmlLink);
     });
