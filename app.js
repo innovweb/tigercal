@@ -123,6 +123,7 @@ var main = function (auth) {
                 var messageId = res.messages[i].id;
 
                 // Mark email as read by deleting UNREAD label
+                // FIXME: Should default behavior be leaving them unread?
                 google.gmail('v1').users.messages.modify({
                     userId: 'me',
                     id: messageId,
